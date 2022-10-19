@@ -96,7 +96,39 @@ fn postorder<T: Debug>(node: Option<Node<T>>) -> Result<Vec<T>, ()> {
     }
 }
 
-// TODO: DFS
+// DFS
+
+#[derive(Clone)]
+struct Graph {
+    visited: Vec<bool>,
+    adj_lists: Vec<Vec<usize>>,
+}
+
+impl Graph {
+    fn new(v: usize) -> Self {
+        Self {
+            visited: vec![false; v],
+            adj_lists: vec![Vec::new(); v],
+        }
+    }
+
+    fn add_edge(&mut self, src: usize, dest: usize) {
+        self.adj_lists[src].push(dest);
+    }
+
+    fn dfs(&mut self, vertex: usize) -> Vec<usize> {
+        let mut result: Vec<usize> = Vec::new();
+        self.visited[vertex] = true;
+        result.push(vertex);
+        for v in self.adj_lists[vertex].clone().iter() {
+            if !self.visited[*v] {
+                let res = self.dfs(*v);
+                result.extend(res)
+            }
+        }
+        result
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -149,5 +181,18 @@ mod tests {
         if let Ok(res) = postorder(Some(node)) {
             assert_eq!(vec![8, 9, 4, 10, 11, 5, 2, 6, 7, 3, 1], res);
         };
+    }
+
+    #[test]
+    fn test_dfs() {
+        let mut graph = Graph::new(5);
+        graph.add_edge(0, 1);
+        graph.add_edge(0, 2);
+        graph.add_edge(0, 3);
+        graph.add_edge(1, 2);
+        graph.add_edge(2, 4);
+
+        let result: Vec<usize> = graph.dfs(0);
+        assert_eq!(vec![0, 1, 2, 4, 3], result);
     }
 }
